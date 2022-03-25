@@ -7,18 +7,18 @@
 
 %%
 
-"proc"  { return T_PROC   ; }
-"var"   { return T_VAR    ; }
-"if"    { return T_IF     ; }
-"else"  { return T_ELSE   ; }
-"while" { return T_WHILE  ; }
-":="    { return T_ASSIGN ; }
-"=="    { return T_EQ     ; }
-"!="    { return T_NEQ    ; }
-"not"   { return T_NOT    ; }
-"and"   { return T_AND    ; }
-"or"    { return T_OR     ; }
-"xor"   { return T_XOR    ; }
+proc  { return T_PROC   ; }
+var   { return T_VAR    ; }
+if    { return T_IF     ; }
+else  { return T_ELSE   ; }
+while { return T_WHILE  ; }
+:=    { return T_ASSIGN ; }
+==    { return T_EQ     ; }
+!=    { return T_NEQ    ; }
+not   { return T_NOT    ; }
+and   { return T_AND    ; }
+or    { return T_OR     ; }
+xor   { return T_XOR    ; }
 [{}()\[\]+\-*/%&><,;] { return yytext[0]; }
 
 [a-zA-Z_][a-zA-Z_0-9] {
