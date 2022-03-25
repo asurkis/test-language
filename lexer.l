@@ -21,7 +21,7 @@ or    { return T_OR     ; }
 xor   { return T_XOR    ; }
 [{}()\[\]+\-*/%&><,;] { return yytext[0]; }
 
-[a-zA-Z_][a-zA-Z_0-9] {
+[a-zA-Z_][a-zA-Z_0-9]* {
   size_t len = strlen(yytext);
   yylval.identifier = malloc(len + 1);
   strcpy(yylval.identifier, yytext);

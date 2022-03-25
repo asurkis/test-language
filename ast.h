@@ -1,6 +1,8 @@
 #ifndef _AST_H_
 #define _AST_H_
 
+#include <stddef.h>
+
 int yylex(void);
 void yyerror(char const *s);
 
@@ -64,24 +66,21 @@ static inline void ast_traverse_translate(struct ast *node,
 
 #define AST_CAST(ast, type) ((type *)((char *)ast - offsetof(type, base)))
 
-AST_DECLARE_TYPE_1(refname, char *name)
-AST_DECLARE_TYPE_1(constant, int value)
-AST_DECLARE_TYPE_1(lvalue, struct ast *calc_addr)
 AST_DECLARE_TYPE_2(global, struct ast *item, struct ast *next)
-AST_DECLARE_TYPE_2(unop, int code, struct ast *arg)
-AST_DECLARE_TYPE_2(decl_var, char *name, int size)
-AST_DECLARE_TYPE_2(var_list, struct ast *decl, struct ast *next)
-AST_DECLARE_TYPE_2(op_list, struct ast *op, struct ast *next)
-AST_DECLARE_TYPE_2(push_list, struct ast *op, struct ast *next)
-AST_DECLARE_TYPE_2(arg_list, char *name, struct ast *next)
-AST_DECLARE_TYPE_2(proc_call, char *name, struct ast *push_list)
-AST_DECLARE_TYPE_2(assign, struct ast *lvalue, struct ast *expr)
-AST_DECLARE_TYPE_2(while, struct ast *cond, struct ast *block)
-AST_DECLARE_TYPE_3(if, struct ast *cond, struct ast *if_true,
-                   struct ast *if_false)
+AST_DECLARE_TYPE_3(procedure, struct ast *header, struct ast *vars, struct ast *code)
 AST_DECLARE_TYPE_2(proc_header, char *name, struct ast *args)
-AST_DECLARE_TYPE_3(procedure, struct ast *header, struct ast *vars,
-                   struct ast *code)
+AST_DECLARE_TYPE_2(arg_list, char *name, struct ast *next)
+AST_DECLARE_TYPE_2(var_list, struct ast *decl, struct ast *next)
+AST_DECLARE_TYPE_2(decl_var, char *name, int size)
+AST_DECLARE_TYPE_2(op_list, struct ast *op, struct ast *next)
+AST_DECLARE_TYPE_2(proc_call, char *name, struct ast *push_list)
+AST_DECLARE_TYPE_2(push_list, struct ast *expr, struct ast *next)
+AST_DECLARE_TYPE_2(assign, struct ast *left, struct ast *right)
+AST_DECLARE_TYPE_3(if, struct ast *cond, struct ast *if_true, struct ast *if_false)
+AST_DECLARE_TYPE_2(while, struct ast *cond, struct ast *body)
 AST_DECLARE_TYPE_3(binop, int code, struct ast *left, struct ast *right)
+AST_DECLARE_TYPE_2(unop, int code, struct ast *arg)
+AST_DECLARE_TYPE_1(constant, int value)
+AST_DECLARE_TYPE_1(refname, char *name)
 
 #endif

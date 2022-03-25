@@ -29,8 +29,7 @@
 %type <ast> declare_vars
 %type <ast> vars
 %type <ast> decl_var
-%type <ast> rvalue
-%type <ast> lvalue
+%type <ast> expr
 %type <ast> code_block
 %type <ast> operator_list
 %type <ast> proc_call
@@ -42,7 +41,7 @@
 
 %%
 
-root: global;
+root: global { result = $1; };
 
 global:
     global_item global { $$ = ast_new_global($1, $2   ); }
@@ -55,8 +54,8 @@ proc:
   | proc_header              code_block { $$ = ast_new_procedure($1, NULL , $2); }
   ;
 proc_header:
-    T_PROC T_IDENTIFIER args { $$ = ast_new_proc_header($2, $3   ); }
-  | T_PROC T_IDENTIFIER      { $$ = ast_new_proc_header($2, NULL ); };
+    T_PROC T_IDENTIFIER '(' args ')' { $$ = ast_new_proc_header($2, $4   ); }
+  | T_PROC T_IDENTIFIER '('      ')' { $$ = ast_new_proc_header($2, NULL ); };
 args:
     T_IDENTIFIER ',' args { $$ = ast_new_arg_list($1, $3   ); }
   | T_IDENTIFIER          { $$ = ast_new_arg_list($1, NULL ); }
@@ -83,55 +82,45 @@ operator_list:
 operator: proc_call | assignment | if_operator | while_operator | code_block;
 
 proc_call:
-    T_IDENTIFIER push_list ';' { $$ = ast_new_proc_call($1, $2   ); }
-  | T_IDENTIFIER           ';' { $$ = ast_new_proc_call($1, NULL ); }
+    T_IDENTIFIER '(' push_list ')' ';' { $$ = ast_new_proc_call($1, $3   ); }
+  | T_IDENTIFIER '('           ')' ';' { $$ = ast_new_proc_call($1, NULL ); }
   ;
 push_list:
-  rvalue ',' push_list { $$ = ast_new_push_list($1, $3); }
-  | rvalue { $$ = ast_new_push_list($1, NULL); }
+  expr ',' push_list { $$ = ast_new_push_list($1, $3); }
+  | expr { $$ = ast_new_push_list($1, NULL); }
   ;
 
-assignment: lvalue T_ASSIGN rvalue ';' { $$ = ast_new_assign($1, $3); };
+assignment: expr T_ASSIGN expr ';' { $$ = ast_new_assign($1, $3); };
 
 if_operator:
-  T_IF rvalue code_block T_ELSE code_block { $$ = ast_new_if($2, $3, $5); }
-  | T_IF rvalue code_block { $$ = ast_new_if($2, $3, NULL); }
+  T_IF expr code_block T_ELSE code_block { $$ = ast_new_if($2, $3, $5); }
+  | T_IF expr code_block { $$ = ast_new_if($2, $3, NULL); }
   ;
 
-while_operator: T_WHILE rvalue code_block { $$ = ast_new_while($2, $3); };
+while_operator: T_WHILE expr code_block { $$ = ast_new_while($2, $3); };
 
-rvalue:
-  '(' rvalue ')' { $$ = $2; }
-  | '&' lvalue {
-    struct ast_lvalue *ptr = AST_CAST($2, struct ast_lvalue);
-    $$ = ptr->calc_addr;
-    ptr->calc_addr = NULL;
-    ast_free($2);
-  }
-  | lvalue { $$ = ast_new_lvalue($1); }
-  | T_NUMBER { $$ = ast_new_constant($1); }
+expr:
+  T_NUMBER { $$ = ast_new_constant($1); }
+  | T_IDENTIFIER { $$ = ast_new_refname($1); }
+  |  '(' expr ')' { $$ = $2; }
 
-  | rvalue '+'   rvalue { $$ = ast_new_binop( '+'   , $1, $3); }
-  | rvalue '-'   rvalue { $$ = ast_new_binop( '-'   , $1, $3); }
-  | rvalue '*'   rvalue { $$ = ast_new_binop( '*'   , $1, $3); }
-  | rvalue '/'   rvalue { $$ = ast_new_binop( '/'   , $1, $3); }
-  | rvalue '%'   rvalue { $$ = ast_new_binop( '%'   , $1, $3); }
-  | rvalue T_EQ  rvalue { $$ = ast_new_binop( T_EQ  , $1, $3); }
-  | rvalue T_NEQ rvalue { $$ = ast_new_binop( T_NEQ , $1, $3); }
-  | rvalue '>'   rvalue { $$ = ast_new_binop( '>'   , $1, $3); }
-  | rvalue '<'   rvalue { $$ = ast_new_binop( '<'   , $1, $3); }
-  | rvalue T_AND rvalue { $$ = ast_new_binop( T_AND , $1, $3); }
-  | rvalue T_OR  rvalue { $$ = ast_new_binop( T_OR  , $1, $3); }
-  | rvalue T_XOR rvalue { $$ = ast_new_binop( T_XOR , $1, $3); }
+  | expr '+'   expr { $$ = ast_new_binop( '+'   , $1, $3); }
+  | expr '-'   expr { $$ = ast_new_binop( '-'   , $1, $3); }
+  | expr '*'   expr { $$ = ast_new_binop( '*'   , $1, $3); }
+  | expr '/'   expr { $$ = ast_new_binop( '/'   , $1, $3); }
+  | expr '%'   expr { $$ = ast_new_binop( '%'   , $1, $3); }
+  | expr T_EQ  expr { $$ = ast_new_binop( T_EQ  , $1, $3); }
+  | expr T_NEQ expr { $$ = ast_new_binop( T_NEQ , $1, $3); }
+  | expr '>'   expr { $$ = ast_new_binop( '>'   , $1, $3); }
+  | expr '<'   expr { $$ = ast_new_binop( '<'   , $1, $3); }
+  | expr T_AND expr { $$ = ast_new_binop( T_AND , $1, $3); }
+  | expr T_OR  expr { $$ = ast_new_binop( T_OR  , $1, $3); }
+  | expr T_XOR expr { $$ = ast_new_binop( T_XOR , $1, $3); }
 
-  | '-'   rvalue %prec P_UNARY { $$ = ast_new_unop( '-'   , $2); }
-  | '+'   rvalue %prec P_UNARY { $$ = ast_new_unop( '+'   , $2); }
-  | T_NOT rvalue %prec P_UNARY { $$ = ast_new_unop( T_NOT , $2); }
-  ;
-
-lvalue:
-  T_IDENTIFIER { $$ = ast_new_refname($1); }
-  | '[' rvalue ']' { $$ = ast_new_lvalue($2); }
+  | '-'   expr %prec P_UNARY { $$ = ast_new_unop( '-'   , $2); }
+  | '+'   expr %prec P_UNARY { $$ = ast_new_unop( '+'   , $2); }
+  | T_NOT expr %prec P_UNARY { $$ = ast_new_unop( T_NOT , $2); }
+  | '*'   expr %prec P_UNARY { $$ = ast_new_unop( '*'   , $2); }
   ;
 
 %%
