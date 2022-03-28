@@ -6,13 +6,16 @@
 int yylex(void);
 void yyerror(char const *s);
 
-struct translate_context {
-  int register_counter;
-  int label_counter;
-};
-
 struct ast;
 extern struct ast *result;
+
+struct translate_context {
+  struct ast *proc_args;
+  struct ast *proc_vars;
+  int register_counter;
+  int label_counter;
+  int stack_depth;
+};
 
 struct ast_metatable {
   void (*free_node)(struct ast *);
