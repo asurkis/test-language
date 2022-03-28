@@ -54,21 +54,21 @@ proc:
   | proc_header              code_block { $$ = ast_new_procedure($1, NULL , $2); }
   ;
 proc_header:
-    T_PROC T_IDENTIFIER '(' args ')' { $$ = ast_new_proc_header($2, $4   ); }
-  | T_PROC T_IDENTIFIER '('      ')' { $$ = ast_new_proc_header($2, NULL ); };
+    T_PROC T_IDENTIFIER '(' args ')' { $$ = ast_new_proc_header(copy_str($2), $4   ); }
+  | T_PROC T_IDENTIFIER '('      ')' { $$ = ast_new_proc_header(copy_str($2), NULL ); };
 args:
-    T_IDENTIFIER ',' args { $$ = ast_new_arg_list($1, $3   ); }
-  | T_IDENTIFIER          { $$ = ast_new_arg_list($1, NULL ); }
+    T_IDENTIFIER ',' args { $$ = ast_new_arg_list(copy_str($1), $3   ); }
+  | T_IDENTIFIER          { $$ = ast_new_arg_list(copy_str($1), NULL ); }
   ;
 
 declare_vars: T_VAR vars { $$ = $2; };
 vars:
-  decl_var ',' vars { $$ = ast_new_var_list($1, $3   ); }
-  | decl_var        { $$ = ast_new_var_list($1, NULL ); }
+    decl_var ',' vars { $$ = ast_new_var_list($1, $3   ); }
+  | decl_var          { $$ = ast_new_var_list($1, NULL ); }
   ;
 decl_var:
-    T_IDENTIFIER '[' T_NUMBER ']' { $$ = ast_new_decl_var($1, $3 ); }
-  | T_IDENTIFIER                  { $$ = ast_new_decl_var($1,  1 ); }
+    T_IDENTIFIER '[' T_NUMBER ']' { $$ = ast_new_decl_var(copy_str($1), $3 ); }
+  | T_IDENTIFIER                  { $$ = ast_new_decl_var(copy_str($1),  1 ); }
   ;
 
 code_block:
@@ -82,8 +82,8 @@ operator_list:
 operator: proc_call | assignment | if_operator | while_operator | code_block;
 
 proc_call:
-    T_IDENTIFIER '(' push_list ')' ';' { $$ = ast_new_proc_call($1, $3   ); }
-  | T_IDENTIFIER '('           ')' ';' { $$ = ast_new_proc_call($1, NULL ); }
+    T_IDENTIFIER '(' push_list ')' ';' { $$ = ast_new_proc_call(copy_str($1), $3   ); }
+  | T_IDENTIFIER '('           ')' ';' { $$ = ast_new_proc_call(copy_str($1), NULL ); }
   ;
 push_list:
   expr ',' push_list { $$ = ast_new_push_list($1, $3); }
@@ -101,7 +101,7 @@ while_operator: T_WHILE expr code_block { $$ = ast_new_while($2, $3); };
 
 expr:
   T_NUMBER { $$ = ast_new_constant($1); }
-  | T_IDENTIFIER { $$ = ast_new_refname($1); }
+  | T_IDENTIFIER { $$ = ast_new_refname(copy_str($1)); }
   |  '(' expr ')' { $$ = $2; }
 
   | expr '+'   expr { $$ = ast_new_binop( '+'   , $1, $3); }

@@ -5,6 +5,7 @@
 
 int yylex(void);
 void yyerror(char const *s);
+char *copy_str(char const *s);
 
 struct ast;
 extern struct ast *result;

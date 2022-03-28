@@ -1,0 +1,48 @@
+proc readval(out)
+var char
+{
+  read(char);
+  while ((*char < 48) or (57 < *char)) {
+    read(char);
+  }
+  out := 0;
+  while ((47 < *char) and (*char < 58)) {
+    out := 10 * *out + *char;
+    read(char);
+  }
+}
+
+proc writeval(val)
+var buf[10], neg, pos
+{
+  neg := *val < 0;
+  if (*val < 0) {
+    val := -*val;
+  }
+  if (*val == 0) {
+    write(48);
+  } else {
+    pos := 10;
+    while (*val) {
+      pos := pos - 1;
+      buf + pos := 48 + *val % 10;
+      val := *val / 10;
+    }
+    if (neg) {
+      write(45);
+    }
+    while (*pos < 10) {
+      write(*(buf + pos));
+      pos := pos + 1;
+    }
+  }
+}
+
+proc main()
+var a, b
+{
+  readval(a);
+  readval(b);
+  writeval(*a + *b);
+  write(10);
+}

@@ -6,3 +6,6 @@
 !ast.h
 !lexer.l
 !parser.y
+!example.in
+!example.s
+!README.md
