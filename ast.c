@@ -364,8 +364,8 @@ static void ast_traverse_translate_binop(struct ast *node,
            context->register_counter, context->register_counter + 1);
     break;
   case '>':
-    printf("\tgt x%d x%d x%d\n", context->register_counter,
-           context->register_counter, context->register_counter + 1);
+    printf("\tlt x%d x%d x%d\n", context->register_counter,
+           context->register_counter + 1, context->register_counter);
     break;
   case '<':
     printf("\tlt x%d x%d x%d\n", context->register_counter,
