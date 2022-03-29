@@ -278,10 +278,10 @@ static void
 ast_traverse_translate_push_list(struct ast *node,
                                  struct translate_context *context) {
   AST_CAST_SELF(push_list)
+  ast_traverse_translate(self->next, context);
   context->register_counter = 3;
   ast_traverse_translate(self->expr, context);
   translate_push(context->register_counter);
-  ast_traverse_translate(self->next, context);
 }
 
 static void ast_traverse_translate_assign(struct ast *node,
