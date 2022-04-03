@@ -192,11 +192,13 @@ ast_traverse_translate_procedure(struct ast *node,
     var_ = var->next;
   }
   if (shift) {
-    printf("\tli x3 %d\n", shift);
-    printf("\tadd x1 x1 x3\n");
+    printf("\taddi x1, x1, %d\n", shift);
   }
   ast_traverse_translate(self->code, context);
-  printf("\tjal x0 x2\n");
+  if (shift) {
+    printf("\taddi x1, x1, %d\n", -shift);
+  }
+  printf("\tjalr x0, x2, 0\n");
 }
 
 static void
@@ -234,15 +236,13 @@ static void ast_traverse_translate_op_list(struct ast *node,
 }
 
 static void translate_push(int reg) {
-  printf("\ts x%d x1\n", reg);
-  printf("\tli x%d 1\n", reg + 1);
-  printf("\tadd x1 x1 x%d\n", reg + 1);
+  printf("\tsw x%d, x1, 0\n", reg);
+  printf("\taddi x1, x1, 1\n");
 }
 
 static void translate_pop(int reg) {
-  printf("\tli x%d 1\n", reg + 1);
-  printf("\tsub x1 x1 x%d\n", reg + 1);
-  printf("\tl x%d x1\n", reg);
+  printf("\taddi x1, x1, -1\n");
+  printf("\tlw x%d, x1, 0\n", reg);
 }
 
 static void
@@ -255,21 +255,23 @@ ast_traverse_translate_proc_call(struct ast *node,
     context->register_counter = 3;
     ast_traverse_translate(first->expr, context);
     printf("\teread x4\n");
-    printf("\ts x4 x3\n");
+    printf("\tsw x4, x3, 0\n");
   } else if (strcmp("write", self->name) == 0) {
     struct ast_push_list *first =
         AST_CAST(self->push_list, struct ast_push_list);
     context->register_counter = 3;
     ast_traverse_translate(first->expr, context);
-    printf("\tewrite x3\n");
+    printf("\taddi x31, x3, 0\n");
+    printf("\tewrite\n");
   } else {
+    ' ';
     translate_push(2);
     context->stack_depth = 0;
     ast_traverse_translate(self->push_list, context);
-    printf("\tli x2 p_%s\n", self->name);
-    printf("\tjal x2 x2\n");
-    printf("\tli x3 %d\n", context->stack_depth);
-    printf("\tsub x1 x1 x3\n");
+    printf("\tjal x2, p_%s\n", self->name);
+    if (context->stack_depth) {
+      printf("\taddi x1, x1, %d\n", -context->stack_depth);
+    }
     translate_pop(2);
   }
 }
@@ -282,6 +284,7 @@ ast_traverse_translate_push_list(struct ast *node,
   context->register_counter = 3;
   ast_traverse_translate(self->expr, context);
   translate_push(context->register_counter);
+  context->stack_depth++;
 }
 
 static void ast_traverse_translate_assign(struct ast *node,
@@ -291,7 +294,7 @@ static void ast_traverse_translate_assign(struct ast *node,
   ast_traverse_translate(self->left, context);
   context->register_counter++;
   ast_traverse_translate(self->right, context);
-  printf("\ts x4 x3\n");
+  printf("\tsw x4, x3, 0\n");
 }
 
 static void ast_traverse_translate_if(struct ast *node,
@@ -300,16 +303,14 @@ static void ast_traverse_translate_if(struct ast *node,
   context->register_counter = 3;
   ast_traverse_translate(self->cond, context);
   int label = context->label_counter++;
-  printf("\tli x4 if_%d_false\n", label);
-  printf("\tbeq x0 x3 x4\n");
+  printf("\tbeq x0, x3, if_%d_false\n", label);
   ast_traverse_translate(self->if_true, context);
   if (self->if_false) {
-    printf("\tli x3 if_%d_end\n", label);
-    printf("\tjal x0 x3\n");
+    printf("\tjal x0, if_%d_end\n", label);
   }
   printf("if_%d_false:\n", label);
   ast_traverse_translate(self->if_false, context);
-  printf("if_%d_end:\n");
+  printf("if_%d_end:\n", label);
 }
 
 static void ast_traverse_translate_while(struct ast *node,
@@ -319,11 +320,9 @@ static void ast_traverse_translate_while(struct ast *node,
   printf("while_%d_begin:\n", label);
   context->register_counter = 3;
   ast_traverse_translate(self->cond, context);
-  printf("\tli x4 while_%d_end\n", label);
-  printf("\tbeq x0 x3 x4\n");
+  printf("\tbeq x0, x3, while_%d_end\n", label);
   ast_traverse_translate(self->body, context);
-  printf("\tli x3 while_%d_begin\n", label);
-  printf("\tjal x0\n");
+  printf("\tjal x0, while_%d_begin\n", label);
   printf("while_%d_end:\n", label);
 }
 
@@ -336,51 +335,51 @@ static void ast_traverse_translate_binop(struct ast *node,
   context->register_counter--;
   switch (self->code) {
   case '+':
-    printf("\tadd x%d x%d x%d\n", context->register_counter,
+    printf("\tadd x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case '-':
-    printf("\tsub x%d x%d x%d\n", context->register_counter,
+    printf("\tsub x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case '*':
-    printf("\tmul x%d x%d x%d\n", context->register_counter,
+    printf("\tmul x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case '/':
-    printf("\tdiv x%d x%d x%d\n", context->register_counter,
+    printf("\tdiv x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case '%':
-    printf("\tmod x%d x%d x%d\n", context->register_counter,
+    printf("\trem x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case T_EQ:
-    printf("\teq x%d x%d x%d\n", context->register_counter,
+    printf("\teq x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case T_NEQ:
-    printf("\tneq x%d x%d x%d\n", context->register_counter,
+    printf("\tne x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case '>':
-    printf("\tlt x%d x%d x%d\n", context->register_counter,
+    printf("\tlt x%d, x%d, x%d\n", context->register_counter,
            context->register_counter + 1, context->register_counter);
     break;
   case '<':
-    printf("\tlt x%d x%d x%d\n", context->register_counter,
+    printf("\tlt x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case T_AND:
-    printf("\tand x%d x%d x%d\n", context->register_counter,
+    printf("\tand x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case T_OR:
-    printf("\tor x%d x%d x%d\n", context->register_counter,
+    printf("\tor x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case T_XOR:
-    printf("\txor x%d x%d x%d\n", context->register_counter,
+    printf("\txor x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   }
@@ -392,7 +391,7 @@ static void ast_traverse_translate_unop(struct ast *node,
   ast_traverse_translate(self->arg, context);
   switch (self->code) {
   case '-':
-    printf("\tsub x%d x0 x%d\n", context->register_counter,
+    printf("\tsub x%d, x0, x%d\n", context->register_counter,
            context->register_counter);
     break;
   case '+':
@@ -400,11 +399,11 @@ static void ast_traverse_translate_unop(struct ast *node,
     //        context->register_counter);
     break;
   case T_NOT:
-    printf("\tnot x%d x%d\n", context->register_counter,
+    printf("\tnot x%d, x%d\n", context->register_counter,
            context->register_counter);
     break;
   case '*':
-    printf("\tl x%d x%d\n", context->register_counter,
+    printf("\tlw x%d, x%d, 0\n", context->register_counter,
            context->register_counter);
     break;
   }
@@ -413,7 +412,7 @@ static void ast_traverse_translate_unop(struct ast *node,
 static void ast_traverse_translate_constant(struct ast *node,
                                             struct translate_context *context) {
   AST_CAST_SELF(constant)
-  printf("\tli x%d %d\n", context->register_counter, self->value);
+  printf("\taddi x%d, x0, %d\n", context->register_counter, self->value);
 }
 
 static struct ast_metatable ast_metatable_var_list;
@@ -426,27 +425,24 @@ static void ast_traverse_translate_refname(struct ast *node,
   for (struct ast *var_ = context->proc_vars; var_;) {
     struct ast_var_list *var = AST_CAST(var_, struct ast_var_list);
     struct ast_decl_var *decl = AST_CAST(var->decl, struct ast_decl_var);
+    shift += decl->size;
     if (strcmp(decl->name, self->name) == 0) {
-      printf("\tli x%d\n", context->register_counter);
-      printf("\tl x%d x%d\n", context->register_counter,
-             context->register_counter);
+      printf("\taddi x%d, x1, %d\n", context->register_counter, -shift);
       return;
     }
-    shift += decl->size;
     var_ = var->next;
   }
   for (struct ast *arg_ = context->proc_args; arg_;) {
     struct ast_arg_list *arg = AST_CAST(arg_, struct ast_arg_list);
+    shift += 1;
     if (strcmp(arg->name, self->name) == 0) {
-      printf("\tli x%d\n", context->register_counter);
-      printf("\tl x%d x%d\n", context->register_counter,
-             context->register_counter);
+      printf("\taddi x%d, x1, %d\n", context->register_counter, -shift);
       return;
     }
-    shift += 1;
     arg_ = arg->next;
   }
-  printf("\tli x%d g_%s\n", context->register_counter, self->name);
+  // printf("\tli x%d, g_%s\n", context->register_counter, self->name);
+  printf("\taddi x%d, x0, g_%s\n");
 }
 
 static void ast_free_global(struct ast *node) {
@@ -646,10 +642,9 @@ int main(int argc, char **argv) {
     struct translate_context context;
     context.register_counter = 0;
     context.label_counter = 0;
-    printf("\tli x1 l_stack_begin\n");
-    printf("\tli x2 p_main\n");
-    printf("\tjal x2 x2\n");
-    printf("\tehlt\n");
+    printf("\taddi x1, x0, 0\n");
+    printf("\tjal x2, p_main\n");
+    printf("\tehalt\n");
     ast_traverse_translate(result, &context);
     printf("l_stack_begin:\n");
   }
