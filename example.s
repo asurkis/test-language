@@ -7,12 +7,12 @@ p_print:
 	addi x4, x1, -13
 	lw x4, x4, 0
 	addi x5, x0, 0
-	lt x4, x4, x5
+	slt x4, x4, x5
 	sw x4, x3, 0
 	addi x3, x1, -13
 	lw x3, x3, 0
 	addi x4, x0, 0
-	lt x3, x3, x4
+	slt x3, x3, x4
 	beq x0, x3, if_0_false
 	addi x3, x1, -13
 	addi x4, x1, -13
@@ -24,7 +24,7 @@ if_0_end:
 	addi x3, x1, -13
 	lw x3, x3, 0
 	addi x4, x0, 0
-	eq x3, x3, x4
+	seq x3, x3, x4
 	beq x0, x3, if_1_false
 	addi x3, x0, 48
 	addi x31, x3, 0
@@ -74,7 +74,7 @@ while_4_begin:
 	addi x3, x1, -12
 	lw x3, x3, 0
 	addi x4, x0, 10
-	lt x3, x3, x4
+	slt x3, x3, x4
 	beq x0, x3, while_4_end
 	addi x3, x1, -10
 	addi x4, x1, -12
