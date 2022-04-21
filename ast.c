@@ -355,19 +355,19 @@ static void ast_traverse_translate_binop(struct ast *node,
            context->register_counter, context->register_counter + 1);
     break;
   case T_EQ:
-    printf("\teq x%d, x%d, x%d\n", context->register_counter,
+    printf("\tseq x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case T_NEQ:
-    printf("\tne x%d, x%d, x%d\n", context->register_counter,
+    printf("\tsne x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case '>':
-    printf("\tlt x%d, x%d, x%d\n", context->register_counter,
+    printf("\tslt x%d, x%d, x%d\n", context->register_counter,
            context->register_counter + 1, context->register_counter);
     break;
   case '<':
-    printf("\tlt x%d, x%d, x%d\n", context->register_counter,
+    printf("\tslt x%d, x%d, x%d\n", context->register_counter,
            context->register_counter, context->register_counter + 1);
     break;
   case T_AND:
