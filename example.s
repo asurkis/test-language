@@ -27,8 +27,7 @@ if_0_end:
 	seq x3, x3, x4
 	beq x0, x3, if_1_false
 	addi x3, x0, 48
-	addi x31, x3, 0
-	ewrite
+	ewrite x3
 	jal x0, if_1_end
 if_1_false:
 	addi x3, x1, -12
@@ -66,8 +65,7 @@ while_2_end:
 	addi x3, x1, -11
 	beq x0, x3, if_3_false
 	addi x3, x0, 45
-	addi x31, x3, 0
-	ewrite
+	ewrite x3
 if_3_false:
 if_3_end:
 while_4_begin:
@@ -81,8 +79,7 @@ while_4_begin:
 	lw x4, x4, 0
 	add x3, x3, x4
 	lw x3, x3, 0
-	addi x31, x3, 0
-	ewrite
+	ewrite x3
 	addi x3, x1, -12
 	addi x4, x1, -12
 	lw x4, x4, 0
@@ -106,7 +103,6 @@ p_main:
 	addi x1, x1, -1
 	lw x2, x1, 0
 	addi x3, x0, 10
-	addi x31, x3, 0
-	ewrite
+	ewrite x3
 	jalr x0, x2, 0
 l_stack_begin:

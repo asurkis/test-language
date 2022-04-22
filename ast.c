@@ -261,8 +261,7 @@ ast_traverse_translate_proc_call(struct ast *node,
         AST_CAST(self->push_list, struct ast_push_list);
     context->register_counter = 3;
     ast_traverse_translate(first->expr, context);
-    printf("\taddi x31, x3, 0\n");
-    printf("\tewrite\n");
+    printf("\tewrite x3\n");
   } else {
     ' ';
     translate_push(2);

@@ -1,31 +1,18 @@
-proc print(val)
-var buf[10], neg, pos
-{
-  neg := *val < 0;
-  if (*val < 0) {
-    val := -*val;
-  }
-  if (*val == 0) {
-    write(48);
-  } else {
-    pos := 10;
-    while (*val) {
-      pos := *pos - 1;
+proc print(val) var buf[10], neg, pos
+{ neg := *val < 0;
+  if (*val < 0) { val := -*val; }
+  if (*val == 0) { write(48); }
+  else
+  { pos := 10;
+    while (*val)
+    { pos := *pos - 1;
       buf + *pos := 48 + *val % 10;
-      val := *val / 10;
-    }
-    if (neg) {
-      write(45);
-    }
-    while (*pos < 10) {
-      write(*(buf + *pos));
-      pos := *pos + 1;
-    }
-  }
-}
+      val := *val / 10; }
+    if (neg) { write(45); }
+    while (*pos < 10)
+    { write(*(buf + *pos));
+      pos := *pos + 1; }}}
 
 proc main()
-{
-  print(-12345678);
-  write(10);
-}
+{ print(-12345678);
+  write(10); }
