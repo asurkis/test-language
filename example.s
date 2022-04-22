@@ -1,6 +1,6 @@
 	addi x1, x0, 0
 	jal x2, p_main
-	ehalt
+	ebreak
 p_print:
 	addi x1, x1, 12
 	addi x3, x1, -11

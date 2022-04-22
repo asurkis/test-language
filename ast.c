@@ -644,7 +644,7 @@ int main(int argc, char **argv) {
     context.label_counter = 0;
     printf("\taddi x1, x0, 0\n");
     printf("\tjal x2, p_main\n");
-    printf("\tehalt\n");
+    printf("\tebreak\n");
     ast_traverse_translate(result, &context);
     printf("l_stack_begin:\n");
   }
