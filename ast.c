@@ -225,7 +225,7 @@ static void ast_traverse_translate_decl_var(struct ast *node,
                                             struct translate_context *context) {
   AST_CAST_SELF(decl_var)
   printf("g_%s:\n", self->name);
-  printf("\tdata 0 %d\n", self->size);
+  printf("\tdata 0 * %d\n", self->size);
 }
 
 static void ast_traverse_translate_op_list(struct ast *node,
@@ -236,7 +236,7 @@ static void ast_traverse_translate_op_list(struct ast *node,
 }
 
 static void translate_push(int reg) {
-  printf("\tsw x%d, x1, 0\n", reg);
+  printf("\tsw x1, 0, x%d\n", reg);
   printf("\taddi x1, x1, 1\n");
 }
 
@@ -255,7 +255,7 @@ ast_traverse_translate_proc_call(struct ast *node,
     context->register_counter = 3;
     ast_traverse_translate(first->expr, context);
     printf("\teread x4\n");
-    printf("\tsw x4, x3, 0\n");
+    printf("\tsw x3, 0, x4\n");
   } else if (strcmp("write", self->name) == 0) {
     struct ast_push_list *first =
         AST_CAST(self->push_list, struct ast_push_list);
@@ -293,7 +293,7 @@ static void ast_traverse_translate_assign(struct ast *node,
   ast_traverse_translate(self->left, context);
   context->register_counter++;
   ast_traverse_translate(self->right, context);
-  printf("\tsw x4, x3, 0\n");
+  printf("\tsw x3, 0, x4\n");
 }
 
 static void ast_traverse_translate_if(struct ast *node,
@@ -398,7 +398,7 @@ static void ast_traverse_translate_unop(struct ast *node,
     //        context->register_counter);
     break;
   case T_NOT:
-    printf("\tnot x%d, x%d\n", context->register_counter,
+    printf("\txori x%d, x%d, -1\n", context->register_counter,
            context->register_counter);
     break;
   case '*':
@@ -411,7 +411,7 @@ static void ast_traverse_translate_unop(struct ast *node,
 static void ast_traverse_translate_constant(struct ast *node,
                                             struct translate_context *context) {
   AST_CAST_SELF(constant)
-  printf("\taddi x%d, x0, %d\n", context->register_counter, self->value);
+  printf("\tli x%d, %d\n", context->register_counter, self->value);
 }
 
 static struct ast_metatable ast_metatable_var_list;
@@ -440,8 +440,7 @@ static void ast_traverse_translate_refname(struct ast *node,
     }
     arg_ = arg->next;
   }
-  // printf("\tli x%d, g_%s\n", context->register_counter, self->name);
-  printf("\taddi x%d, x0, g_%s\n");
+  printf("\tli x%d, g_%s\n", context->register_counter, self->name);
 }
 
 static void ast_free_global(struct ast *node) {
@@ -641,7 +640,7 @@ int main(int argc, char **argv) {
     struct translate_context context;
     context.register_counter = 0;
     context.label_counter = 0;
-    printf("\taddi x1, x0, 0\n");
+    printf("\tli x1, l_stack_begin\n");
     printf("\tjal x2, p_main\n");
     printf("\tebreak\n");
     ast_traverse_translate(result, &context);

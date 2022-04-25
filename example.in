@@ -13,6 +13,9 @@ proc print(val) var buf[10], neg, pos
     { write(*(buf + *pos));
       pos := *pos + 1; }}}
 
+var someval
+
 proc main()
-{ print(-12345678);
+{ someval := -12345678;
+  print(*someval);
   write(10); }
