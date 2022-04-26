@@ -8,14 +8,30 @@ proc print(val) var buf[10], neg, pos
     { pos := *pos - 1;
       buf + *pos := 48 + *val % 10;
       val := *val / 10; }
-    if (neg) { write(45); }
+    if (*neg) { write(45); }
     while (*pos < 10)
     { write(*(buf + *pos));
       pos := *pos + 1; }}}
 
-var someval
+proc scan(out) var neg, chr
+{ read(chr);
+  while ((*chr != 0) and (*chr != 45) and ((*chr < 48) or (*chr > 57)))
+  { read(chr); }
+  if (*chr != 0)
+  { neg := *chr == 45;
+    *out := (*neg xor 1) * (*chr - 48);
+    read(chr);
+    while ((47 < *chr) and (*chr < 58))
+    { *out := **out * 10 + *chr - 48;
+      read(chr); }
+    *out := **out * (1 - 2 * *neg); }
+  else
+  { *out := 0; }}
+
+var a, b
 
 proc main()
-{ someval := -12345678;
-  print(*someval);
+{ scan(a);
+  scan(b);
+  print(*a + *b);
   write(10); }
