@@ -33,10 +33,8 @@ if_1_false:
 	addi x3, x1, -12
 	li x4, 10
 	sw x3, 0, x4
-while_2_begin:
-	addi x3, x1, -13
-	lw x3, x3, 0
-	beq x0, x3, while_2_end
+	jal x0, while_2_cond
+while_2_body:
 	addi x3, x1, -12
 	addi x4, x1, -12
 	lw x4, x4, 0
@@ -60,8 +58,10 @@ while_2_begin:
 	li x5, 10
 	div x4, x4, x5
 	sw x3, 0, x4
-	jal x0, while_2_begin
-while_2_end:
+while_2_cond:
+	addi x3, x1, -13
+	lw x3, x3, 0
+	bne x0, x3, while_2_body
 	addi x3, x1, -11
 	lw x3, x3, 0
 	beq x0, x3, if_3_false
@@ -69,12 +69,8 @@ while_2_end:
 	ewrite x3
 if_3_false:
 if_3_end:
-while_4_begin:
-	addi x3, x1, -12
-	lw x3, x3, 0
-	li x4, 10
-	slt x3, x3, x4
-	beq x0, x3, while_4_end
+	jal x0, while_4_cond
+while_4_body:
 	addi x3, x1, -10
 	addi x4, x1, -12
 	lw x4, x4, 0
@@ -87,8 +83,12 @@ while_4_begin:
 	li x5, 1
 	add x4, x4, x5
 	sw x3, 0, x4
-	jal x0, while_4_begin
-while_4_end:
+while_4_cond:
+	addi x3, x1, -12
+	lw x3, x3, 0
+	li x4, 10
+	slt x3, x3, x4
+	bne x0, x3, while_4_body
 if_1_end:
 	addi x1, x1, -12
 	jalr x0, x2, 0
@@ -97,7 +97,12 @@ p_scan:
 	addi x3, x1, -2
 	eread x4
 	sw x3, 0, x4
-while_5_begin:
+	jal x0, while_5_cond
+while_5_body:
+	addi x3, x1, -2
+	eread x4
+	sw x3, 0, x4
+while_5_cond:
 	addi x3, x1, -2
 	lw x3, x3, 0
 	li x4, 0
@@ -117,12 +122,7 @@ while_5_begin:
 	slt x5, x6, x5
 	or x4, x4, x5
 	and x3, x3, x4
-	beq x0, x3, while_5_end
-	addi x3, x1, -2
-	eread x4
-	sw x3, 0, x4
-	jal x0, while_5_begin
-while_5_end:
+	bne x0, x3, while_5_body
 	addi x3, x1, -2
 	lw x3, x3, 0
 	li x4, 0
@@ -149,17 +149,8 @@ while_5_end:
 	addi x3, x1, -2
 	eread x4
 	sw x3, 0, x4
-while_7_begin:
-	li x3, 47
-	addi x4, x1, -2
-	lw x4, x4, 0
-	slt x3, x3, x4
-	addi x4, x1, -2
-	lw x4, x4, 0
-	li x5, 58
-	slt x4, x4, x5
-	and x3, x3, x4
-	beq x0, x3, while_7_end
+	jal x0, while_7_cond
+while_7_body:
 	addi x3, x1, -3
 	lw x3, x3, 0
 	addi x4, x1, -3
@@ -176,8 +167,17 @@ while_7_begin:
 	addi x3, x1, -2
 	eread x4
 	sw x3, 0, x4
-	jal x0, while_7_begin
-while_7_end:
+while_7_cond:
+	li x3, 47
+	addi x4, x1, -2
+	lw x4, x4, 0
+	slt x3, x3, x4
+	addi x4, x1, -2
+	lw x4, x4, 0
+	li x5, 58
+	slt x4, x4, x5
+	and x3, x3, x4
+	bne x0, x3, while_7_body
 	addi x3, x1, -3
 	lw x3, x3, 0
 	addi x4, x1, -3

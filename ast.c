@@ -316,13 +316,13 @@ static void ast_traverse_translate_while(struct ast *node,
                                          struct translate_context *context) {
   AST_CAST_SELF(while)
   int label = context->label_counter++;
-  printf("while_%d_begin:\n", label);
+  printf("\tjal x0, while_%d_cond\n", label);
+  printf("while_%d_body:\n", label);
+  ast_traverse_translate(self->body, context);
+  printf("while_%d_cond:\n", label);
   context->register_counter = 3;
   ast_traverse_translate(self->cond, context);
-  printf("\tbeq x0, x3, while_%d_end\n", label);
-  ast_traverse_translate(self->body, context);
-  printf("\tjal x0, while_%d_begin\n", label);
-  printf("while_%d_end:\n", label);
+  printf("\tbne x0, x3, while_%d_body\n", label);
 }
 
 static void ast_traverse_translate_binop(struct ast *node,
