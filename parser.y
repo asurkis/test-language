@@ -55,7 +55,8 @@ proc:
   ;
 proc_header:
     T_PROC T_IDENTIFIER '(' args ')' { $$ = ast_new_proc_header(copy_str($2), $4   ); }
-  | T_PROC T_IDENTIFIER '('      ')' { $$ = ast_new_proc_header(copy_str($2), NULL ); };
+  | T_PROC T_IDENTIFIER '('      ')' { $$ = ast_new_proc_header(copy_str($2), NULL ); }
+  ;
 args:
     T_IDENTIFIER ',' args { $$ = ast_new_arg_list(copy_str($1), $3   ); }
   | T_IDENTIFIER          { $$ = ast_new_arg_list(copy_str($1), NULL ); }
@@ -86,21 +87,21 @@ proc_call:
   | T_IDENTIFIER '('           ')' ';' { $$ = ast_new_proc_call(copy_str($1), NULL ); }
   ;
 push_list:
-  expr ',' push_list { $$ = ast_new_push_list($1, $3); }
-  | expr { $$ = ast_new_push_list($1, NULL); }
+    expr ',' push_list { $$ = ast_new_push_list($1, $3); }
+  | expr               { $$ = ast_new_push_list($1, NULL); }
   ;
 
 assignment: expr T_ASSIGN expr ';' { $$ = ast_new_assign($1, $3); };
 
 if_operator:
-  T_IF expr code_block T_ELSE code_block { $$ = ast_new_if($2, $3, $5); }
-  | T_IF expr code_block { $$ = ast_new_if($2, $3, NULL); }
+    T_IF expr code_block T_ELSE code_block { $$ = ast_new_if($2, $3, $5   ); }
+  | T_IF expr code_block                   { $$ = ast_new_if($2, $3, NULL ); }
   ;
 
 while_operator: T_WHILE expr code_block { $$ = ast_new_while($2, $3); };
 
 expr:
-  T_NUMBER { $$ = ast_new_constant($1); }
+    T_NUMBER { $$ = ast_new_constant($1); }
   | T_IDENTIFIER { $$ = ast_new_refname(copy_str($1)); }
   |  '(' expr ')' { $$ = $2; }
 
