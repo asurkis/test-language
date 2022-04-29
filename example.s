@@ -236,7 +236,7 @@ p_main:
 	addi x1, x1, -1
 	addi x1, x1, -1
 	lw x2, x1, 0
-	li x3, 10
+	li x3, 32
 	ewrite x3
 	jalr x0, x2, 0
 l_stack_begin:

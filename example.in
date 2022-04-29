@@ -34,4 +34,4 @@ proc main()
 { scan(a);
   scan(b);
   print(*a + *b);
-  write(10); }
+  write(32); }
